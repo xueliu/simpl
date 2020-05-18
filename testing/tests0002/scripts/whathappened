@@ -1,0 +1,28 @@
+#!/bin/bash
+#
+#$Log: whathappened,v $
+#Revision 1.1  2006/01/12 15:52:49  bobfcsoft
+#*** empty log message ***
+#
+#
+#
+
+TEST_NO=s0002
+TEST_DESC="SIMPL benchmark via loopback"
+
+TEST_DIR=$TEST_HOME/testing/test$TEST_NO
+OUTFILE=$TEST_DIR/results/aftershot
+
+echo "preparing results for test#$TEST_NO ... please wait" | tee $OUTFILE
+date | tee -a $OUTFILE
+echo "======================="		 | tee -a $OUTFILE
+echo "Here is the test output"		 | tee -a $OUTFILE
+
+#
+# You may want to grep log for signatures here
+#
+echo "======================="		 | tee -a $OUTFILE
+
+cat $TEST_DIR/results/test.out 		 | tee -a $OUTFILE
+
+echo "done preparing results for test#$TEST_NO"

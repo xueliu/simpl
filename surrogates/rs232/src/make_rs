@@ -1,0 +1,100 @@
+#=======================================================================
+#
+# FILE:			make_rs
+#
+# DESCRIPTION:	This make file produces the RS232 serial program.
+#
+# AUTHOR:		FC Software Inc.
+#-----------------------------------------------------------------------
+#    Copyright (C) 2005 FCSoftware Inc. 
+#
+#    This software is in the public domain.
+#    Permission to use, copy, modify, and distribute this software and its
+#    documentation for any purpose and without fee is hereby granted, 
+#    without any conditions or restrictions.
+#    This software is provided "as is" without express or implied warranty.
+#
+#    If you discover a bug or add an enhancement contact us on the
+#    SIMPL project mailing list.
+#-----------------------------------------------------------------------
+## Revision history:
+# ======================================================================
+# $Log: make_rs,v $
+# Revision 1.2  2009/01/12 19:50:50  johnfcsoft
+# CVS thinks there was a change
+#
+# Revision 1.1  2008/04/21 17:18:16  johnfcsoft
+# initial
+#
+#
+#=======================================================================
+
+#====================================================================
+# definitions
+#====================================================================
+
+MSG_TYPE = SUR_BIN
+#MSG_TYPE = SUR_CHR
+
+CC = cc
+
+OBJ_DIR = ./obj
+BIN_DIR = ../bin
+LIB_DIR = ../../../lib
+INC_DIR = ../../../include
+LOCAL_INC_DIR = ../include
+INSTALL_BIN_DIR=../../../bin
+
+RS232_OBJ = \
+	$(OBJ_DIR)/rs232_rw.o
+
+CDFLAGS = -c -D$(MSG_TYPE) -O -Wall -I$(INC_DIR) -I$(LOCAL_INC_DIR) -o
+LDFLAGS = -L$(LIB_DIR) -lsimpl -lsimplmisc
+
+#=====================================================================
+# Default targets
+#=====================================================================
+all: \
+    title \
+    $(OBJ_DIR) \
+    $(BIN_DIR) \
+	$(BIN_DIR)/rs232_rw
+	@echo rs all
+
+title:
+	@echo rs starting
+
+$(OBJ_DIR):
+	mkdir ./obj
+	chmod a+w ./obj
+
+$(BIN_DIR):
+	mkdir ../bin
+	chmod a+w ../bin
+
+#=====================================================================
+# linking
+#=====================================================================
+$(BIN_DIR)/rs232_rw: $(RS232_OBJ)
+	$(CC) -o $@ $(RS232_OBJ) $(LDFLAGS)
+	
+#=====================================================================
+# compiling
+#=====================================================================
+$(OBJ_DIR)/rs232_rw.o: rs232_rw.c
+	$(CC) $(CDFLAGS) $@ $<
+
+#=====================================================================
+#  cleanup
+#=====================================================================
+clean:
+	@-rm -f $(OBJ_DIR)/*.o
+	@-rm -f $(BIN_DIR)/*
+	@echo rs clean
+
+#==================
+#  debug
+#===================
+debug:
+	make install DE=-g
+	@echo rs debug

@@ -1,0 +1,33 @@
+/****************************************************************************
+
+FILE:			readme.MACOSX
+
+DATE:			09 Jan 21
+
+DESCRIPTION:	Description of how to compile SIMPL for use on a
+				MAC OS X platform.
+
+NOTE:			tabs = 4 for this file.
+
+REVISIONS:
+$Log: readme.MACOSX,v $
+Revision 1.2  2009/01/22 19:02:52  johnfcsoft
+clean up
+
+
+****************************************************************************/
+
+The SIMPL code has been ported to support MAC OS X. It has been tested on the
+power pc platform. The changes are transparent to the user except that in
+several cases, some definitions are required at compile time. These exceptions
+occur in the following source directories:
+
+~/simplipc/src
+~/simplUtils/src
+
+In order to compile this software to run correctly on MAC OS X:
+
+make clean
+make install OS_TYPE=_MAC_OS_X
+
+NOTE: SIMPL is compiled/linked with Linux in mind as the default O/S target.

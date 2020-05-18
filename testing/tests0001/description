@@ -1,0 +1,11 @@
+-----------------------------------------------
+Test s0001: local SIMPL benchmark
+
+$Log: description,v $
+Revision 1.1  2006/01/12 16:03:59  bobfcsoft
+*** empty log message ***
+
+
+This test runs the local SIMPL benchmark with 100000
+1k message passes.
+

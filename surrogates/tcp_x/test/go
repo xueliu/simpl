@@ -1,0 +1,15 @@
+#!/bin/sh
+
+PATH=$PATH:/sbin
+
+echo killing surrogateTcp
+killall surrogateTcp 1> /dev/null 2>&1
+echo killing protocolRouter
+killall protocolRouter 1> /dev/null 2>&1
+sleep 1
+
+echo starting protocolRouter
+../../../bin/protocolRouter &
+sleep 1
+echo starting surrogateTcp 
+../../../bin/surrogateTcp -t10 -k10 &

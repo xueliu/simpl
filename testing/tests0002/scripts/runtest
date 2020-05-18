@@ -1,0 +1,50 @@
+#!/bin/sh
+#
+#$Log: runtest,v $
+#Revision 1.5  2009/03/13 11:16:56  bobfcsoft
+#misnamed
+#
+#Revision 1.4  2009/01/23 16:42:31  johnfcsoft
+#cleanup
+#
+#Revision 1.3  2007/07/24 20:34:24  bobfcsoft
+#new file
+#
+#Revision 1.1  2006/01/12 15:52:49  bobfcsoft
+#*** empty log message ***
+#
+#
+
+TEST_NO=s0002
+TEST_DESC="SIMPL benchmark via loopback"
+
+TEST_DIR=$TEST_HOME/testing/test$TEST_NO
+OUTFILE=$TEST_DIR/results/test.out
+
+echo "Starting up test $TEST_NO" | tee $OUTFILE
+echo $TEST_DESC | tee -a $OUTFILE
+date | tee -a $OUTFILE
+
+echo "" | tee -a $OUTFILE
+echo "This may take a while to complete ... please wait" | tee -a $OUTFILE
+echo "" | tee -a $OUTFILE
+
+cd $SIMPL_HOME/bin
+protocolRouter &
+surrogateTcp &
+
+cd $SIMPL_HOME/benchmarks/bin
+cksum receiver | tee -a $OUTFILE
+receiver -n BOBR &
+
+cksum sender | tee -a $OUTFILE
+#sender -n BOBS -r 127.0.0.1:BOBR -t 100000 -s 1024 | tee -a $OUTFILE
+sender -n BOBS -r 127.0.0.1:BOBR -t 10 -s 1024 | tee -a $OUTFILE
+
+echo "hit any key to exit"
+read ans
+
+fcslay BOBR
+killall surrogateTcp
+killall protocolRouter
+echo "Test finished you can run posttest $TEST_NO for result"

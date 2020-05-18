@@ -1,0 +1,73 @@
+###############################################
+#
+# Makefile - for benchmarks fcipc wrapper 
+#
+# should be run as:
+#     make -f makefcipc simpl
+#
+#
+#-----------------------------------------------------------------------
+#    Copyright (C) 2000 FCSoftware Inc. 
+#
+#    This library is free software; you can redistribute it and/or
+#    modify it under the terms of the GNU Lesser General Public
+#    License as published by the Free Software Foundation; either
+#    version 2.1 of the License, or (at your option) any later version.
+#
+#    This library is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#    Lesser General Public License for more details.
+#
+#    You should have received a copy of the GNU Lesser General Public
+#    License along with this library; if not, write to the Free Software
+#    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+#    If you discover a bug or add an enhancement contact us on the 
+#    SIMPL project mailing list.
+#-----------------------------------------------------------------------
+#
+#$Log: makefcipc,v $
+#Revision 1.2  2007/07/24 20:08:45  bobfcsoft
+#new comment info
+#
+#Revision 1.1.1.1  2005/03/27 11:50:38  paul_c
+#Initial import
+#
+#Revision 1.1  2002/06/12 18:17:17  root
+#Initial revision
+#
+#
+###############################################
+include Makefile
+
+SIMPL_DIR=$(SIMPL_HOME)
+VER=_FIFO
+
+#
+# This overrides the CDFLAGS to add 
+# SIMPL include path
+#
+CDFLAGS=-c \
+        -I $(LOCAL_INCL_DIR)\
+        -I $(INCL_DIR)\
+	-Wall\
+	-D$(OS)\
+	-D$(VER)
+
+#
+# This overrides the LDFLAGS to link srr
+# compatibility library 
+#
+LDFLAGS=\
+	-L $(SIMPL_DIR)/lib \
+	-lfcipc \
+	-lsimplmisc
+
+simpl:\
+     title \
+     $(OBJ_DIR) \
+     $(BIN_DIR) \
+     $(BIN_DIR)/sender\
+     $(BIN_DIR)/receiver
+	@echo benchmarks simplipc compatibility

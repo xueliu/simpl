@@ -1,0 +1,42 @@
+How to run the simplipc test:
+
+After compiling this code using make install you will need to
+open 2 consoles to run the tests.
+
+On console 1: logged onto $SIMPL_HOME/simplipc/bin
+	receiver -n BOBR
+		where BOBR - is an arbitrary name you which to
+				name attach receiver to
+
+On console 2: logged onto $SIMPL_HOME/simplipc/bin
+	sender -n BOBS -r BOBR -m "hello world"
+		where
+			-n BOBS - is name to attach sender to
+			-r BOBR - is name used in 1) above
+			-m <msg> - is the string you wish to send 
+
+	or
+
+	sender -n BOBS -r BOBR -p 33
+		where
+			-n BOBS - is name to attach sender to
+			-r BOBR - is name used in 1) above
+			-p <proxy> - is the proxy value you wish to send
+
+
+What happens is that both processes attach to their respective names.
+The sender then locates receiver and sends the message.  In the case of the
+-m option the sender uses the blocking send to pass the message and blocks
+until the receiver replies.
+
+In the case of the -p option the sender uses the non blocking proxy send
+and does not wait for the receiver to reply.
+
+-------------------------
+FCsoftware Inc. 2002
+This code is released as open source.   We hope you find 
+it useful.  If you discover a bug or add an enhancement 
+we'd like to hear from you. 
+
+	fcsoft@attcanada.ca
+-------------------------

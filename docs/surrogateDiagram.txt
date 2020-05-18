@@ -1,0 +1,53 @@
+    +-------------------------------------------------------------------------+
+    |                          REMOTE APPLICATION SENDER                      |
+    |  S                 S                                        S           |
+    +-------------------------------------------------------------------------+
+      ^                  ^                                        ^
+      | application      |   remote                               |   remote
+      | messages and     | name locate                            | name locate
+      | triggers         |   message                              |  protocol
+      |                  |                                        v
+      |                  |   +---------------------+    +---------------------+
+      |                  |   |                     |    |         RY          |
+      |                  |   | surrogate_R       S |<-->|RY                   |
+      |                  |   |                     |    |      protocolRouter |
+      |                  |   +---------------------+    +---------------------+
+      |                  |              ||
+      |                  |              || fork
+      v                  v              VV
+    +-------------------------------------------------------------------------+
+    | RY                 RY                                                   |
+    |                                                  surrogate_r            |
+    |      s                                s                                 |
+    +-------------------------------------------------------------------------+
+           ^                              ^   |
+           |                    remote    |   |   remote
+           |                  name locate |   | name locate
+           |                    response  |   |    query 
+           |                              |   v
+           |                              |  +---------------------+
+           | application                  |  |r                    |
+           | messages,                    |  |     surrogate_S     |
+           | triggers,                    |  |                     |
+           | ka and                       |  +---------------------+
+           | close                        |             ||
+           |                              |             || fork
+           v                              |             VV
+    +-------------------------------------------------------------------------+
+    |      r                              r                                   |
+    |                                                  surrogate_s            |
+    |               S                                                         |
+    +-------------------------------------------------------------------------+
+                    ^
+                    | application messages and triggers
+                    v
+    +-------------------------------------------------------------------------+
+    |               RY     REMOTE APPLICATION RECEIVER                        |
+    +-------------------------------------------------------------------------+
+
+    Legend
+    ======
+    RY- local receive/reply
+    S- local send
+    r- remote protocol receive/reply
+    s- remote protocol send

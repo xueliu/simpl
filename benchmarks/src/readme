@@ -1,0 +1,25 @@
+How to run the benchmark code:
+
+After compiling this code using make install you will need to
+open 2 consoles to run the tests.
+
+On console 1: logged onto $SIMPL_HOME/benchmarks/bin
+	receiver -n BOBR
+		where BOBR - is an arbitrary name you which to
+				name attach receiver to
+
+On console 2: logged onto $SIMPL_HOME/benchmarks/bin
+	sender -n BOBS -r BOBR -t 60000 -s 1024
+		where
+			-n BOBS - is name to attach sender to
+			-r BOBR - is name used in 1) above
+			-t 60000 - means send 60000 messages before
+				displaying timing
+			-s 1024 - make each message 1024 bytes in length
+				(same size for replies)
+
+What happens is that sender locates receiver and then marks the time.
+It then procedes to send a bunch of messages to the receiver each time
+blocking for the same size reply.  When the command line determined number
+of messages have been exchanged the sender calculates and reports the
+total elapsed time in msec.

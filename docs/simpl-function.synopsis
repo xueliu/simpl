@@ -1,0 +1,445 @@
+/***********************************************************************
+
+FILE:			sipc-functions.synopsis	
+
+DATE:			09 Jan 22
+
+DESCRIPTION:	Description of SIMPL application program functions.
+
+NOTE:			tabs = 4 for this file.
+
+REVISIONS:
+$Log: simpl-function.synopsis,v $
+Revision 1.5  2009/01/22 19:04:11  johnfcsoft
+clean up
+
+
+***********************************************************************/
+
+The following is a description of the SIMPL library calls offered.
+
+NOTES:
+1. When errors are encountered, the variable _simpl_errno (global to
+the library) is always set and the corresponding error string can be
+displayed by invoking whatsMyError().
+2. Most if not all internal errors are written to /var/log/simpl.  
+3. Macro definitions regarding maximal/minimal quantities such as 
+MAX_PROGRAM_NAME_LEN are contained in ~/include/simplDefs.h.
+
+======================================================================
+======================================================================
+
+int name_attach(char *processName, void (*exitFunc)())
+
+DESCRIPTION
+===========
+This function is required by every process that expects to send/receive
+messages from any other process. It must precede any other simpl library
+calls.
+The string processName is the desired name of the process. This name
+name must be unique on each computer but not necessarily on a
+network. Its length is defined as follows:
+
+				0 < length < MAX_PROGRAM_NAME_LEN
+
+If the name is too large, it is truncated to fit. 
+
+exitFunc() is some function that the user wants to have run at exit
+time or in the case of the occurrence of a SIGTERM or similar signal.
+
+RETURNS
+=======
+Success: 0
+Failure: -1
+
+Failures may occur due to:
+1. The name string is too short (zero bytes).
+2. The environment variable "FIFO_PATH" is not defined.
+3. Name is not unique on that particular computer.
+4. A receive fifo could not be made.
+5. A reply fifo could not be made.
+
+======================================================================
+======================================================================
+
+int name_detach(void)
+
+The name_detach function removes simpl based components from a program
+that was previously name_attach'd.
+
+It returns 0 on success or -1 on failure.
+
+Failure occurs if:
+1. The calling process was never name attached.
+
+======================================================================
+======================================================================
+
+int child_detach(void)
+
+DESCRIPTION
+===========
+The child_detach function allows the child of forked parent to remove
+the now common simpl components. This occurs if the parent has
+name_attach()'d. This call should be made prior to a forked child 
+running its own name_attach().
+
+RETURNS
+=======
+Success: 0
+Failure: -1
+
+Failure occurs if the called process is not currently name attached.
+
+======================================================================
+======================================================================
+
+int sur_detach(int)
+
+DESCRIPTION
+===========
+This function must be called if a process exits after a running a
+name_locate() for a process on a remote host. The sur_detach will
+cause the surrogates to terminate by sending them SUR_CLOSE messages.
+The number of receiver surrogates is stored in a table internal to
+the sending process.
+
+The int passed in is the surrogate receiver fifo fd.
+
+Currently, this function is called as part of the exit function for
+any process that performs a non-local name_locate().
+
+RETURNS
+=======
+Success: 0
+Failure: -1
+
+Failures may occur due to:
+1. The fd passed in is non-sequitor.
+2. Communication errors with the receiver surrogate.
+
+======================================================================
+======================================================================
+
+int name_locate(char *protocolName:hostName:processName)
+
+DESCRIPTION
+===========
+This function must be called prior to a Send() or Trigger() call so that
+the sender may identify the receiver it wishes to send to.
+
+The protocolName determines the ensuing remote protocol method of
+data exchange. If this is not set, then a default is chosen.
+The default will be the first available protocol found in the protocol
+router's table.
+
+The hostName is name of the host that the sender wishes to send to.
+It may be either a real host name (canonical or alias) or non-existent
+in the case of a local send. It can also be in the dotted network format.
+If the local host name/ip is used, the simpl will run locally. If the host
+name is entered, but t is the local host name/ip it will simply run as local.
+
+The processName is the name of the receiving process that is name attached on
+that particular host. 
+
+EXAMPLE
+=======
+For the case that the name_locate() is local the host name
+is nothing or the local host name. The call will be as follows:
+
+int id;
+
+id = name_locate("myProcess");
+or 
+id = name_locate("myHost:myProcess");
+
+In the case of a remote call:
+
+id = name_locate("remoteHostName:remoteProcessName");
+or
+id = name_locate("protocol:remoteHostName:remoteProcessName");
+
+A further example might help:
+
+id = name_locate("_simplTCP:192.168.1.101:receiver1");
+
+specifies the protocol type as _simplTCP, the ip address 192.168.1.101 of the
+host and the receiver's simpl name, receiver1. If the ip address is the same as
+that of the local host, then the communication will be local simpl and the
+protocol field will be ignored.
+
+RETURNS
+=======
+Success: the id of the receiver process that a message is to sent to.
+Failure: -1
+
+Failures may occur due to:
+1. The calling process was never name attached.
+2. The protocol name is not supported.
+3. The process name is NULL.
+4. The HOSTNAME enivironment variable is not set.
+5. Too many colons in the argument. (maximum of 2)
+
+For remote name locates:
+6. Failure to contact the protocolRouter program.
+7. No surrogates available.
+8. Failure to contact surrogate.
+9. Failure to find remote receiving program.
+
+======================================================================
+======================================================================
+
+int Receive(char **ptr, void *inArea, unsigned maxBytes)
+
+DESCRIPTION
+===========
+This function receives messages from senders in a memory area pointed to
+by inArea and no larger than that specified by maxBytes.
+
+In the case that inArea is NULL, the maxBytes is ignored. The actual
+copying of the message can then be done via the simplRcopy() call. In
+this way, an undetermined amount of memory can be accounted for by
+using dynamic allocation as opposed to some large global or stack
+buffer if desired.
+
+The *ptr is set in the Receive() and uniquely identifies the sender.
+This value is later used for replies.
+
+RETURNS
+=======
+Success1: >=0, the size of the incoming message.
+Success2: <=-2, a proxy has been received.
+Failure: -1
+ 
+Note: in the case of a proxy being sent, you must call the function
+returnProxy(int proxyNumber) to obtain the true value of the proxy.
+
+Failures can arise from:
+1. The calling process was never name attached.
+2. Fifo trigger problems.
+3. Shmem problems.
+
+======================================================================
+======================================================================
+
+int Send(int fd, void *out, void *in, unsigned outSize, unsigned inSize)
+
+DESCRIPTION
+===========
+This is a blocked send. This means that the calling program expects
+a reply from the receiver and waits until it gets one. The fd is
+the result of a prior call to name_locate() with regard to the receiver
+of interest.
+
+The function sends a message to the receiver pointed to by out with
+message size = outSize. It expects a reply message from the receiver to
+be placed in memory pointed to by in with a size no larger than inSize. 
+
+RETURNS
+=======
+Success: n, the size of the reply message.
+Failure: -1
+
+Failures can occur due to:
+1. The calling process was never name attached.
+2. name_locate() was not run prior to the Send call.
+3. Fifo problems.
+4. Reply errors.
+5. Reply message larger than inSize.
+
+======================================================================
+======================================================================
+
+int Reply(char *ptr, void *outArea, unsigned size)
+
+DESCRIPTION
+===========
+Reply responds a return message from a receiver to a blocked sender
+designated by ptr. The reply message is pointed to by outArea and
+is of size = size.
+
+RETURNS
+=======
+Success: 0
+Failure: -1
+
+Failures can occur due to:
+1. The calling process was never name attached.
+2. Fifo errors.
+
+======================================================================
+======================================================================
+
+int Trigger(int fd, int proxy)
+
+DESCRIPTION
+===========
+Trigger sends a proxy identified as an int to a receiving process
+identified by a prior call to name_locate() giving fd.
+
+*** IMPORTANT! *****************************************
+The proxy MUST be an integer > 0 AND < 7FFFFFFF
+********************************************************
+
+This can thought of as a kick to the receiver and requires no reply.
+
+RETURNS
+=======
+Success: 0
+Failure: -1
+
+Failures can occur due to:
+1. The calling process was never name attached.
+2. Receiver does not exist.
+3. Fifo errors.
+4. Proxy number is out of range.
+
+======================================================================
+======================================================================
+
+int Relay(char *sender, int fd)
+
+DESCRIPTION
+===========
+Relay relays a a message to another process.
+
+RETURNS
+=======
+
+Success: 1
+Failure: -1
+
+======================================================================
+======================================================================
+
+char *whatsMyName()
+
+DESCRIPTION
+===========
+whatsMyName finds the simpl name of the calling process.
+
+RETURNS
+=======
+Success: simpl name 
+Failure: NULL
+
+Failures can occur due to:
+1. The calling process was never name attached.
+
+======================================================================
+======================================================================
+
+int whatsMyRecvfd()
+
+DESCRIPTION
+===========
+whatsMyRecvfd finds the receive fifo file descriptor of the calling
+process. If one has not been assigned, one will be made.
+
+RETURNS
+=======
+Success: the receive fifo file descriptor 
+Failure: -1
+
+Failures can occur due to:
+1. The calling process was never name attached.
+2. The fifo could not be opened for read/write.
+
+======================================================================
+======================================================================
+
+int whatsMyReplyfd()
+
+DESCRIPTION
+===========
+whatsMyReplyfd finds the reply fifo file descriptor of the calling
+process. If one has not been assigned, one will be made.
+
+RETURNS
+=======
+Success: the reply fifo file descriptor 
+Failure: -1
+
+Failures can occur due to:
+1. The calling process was never name attached.
+2. The fifo could not be opened for read/write.
+
+======================================================================
+======================================================================
+
+char *whatsMyError()
+
+DESCRIPTION
+===========
+whatsMyError returns a descriptive string based on the last value of
+_simpl_errno.
+This is very similar to the well known errno/strerror(errno)
+combination.
+
+RETURNS
+=======
+A pointer to a the error string.
+
+======================================================================
+======================================================================
+
+void simplRcopy(char *ptr, void *dst, unsigned size)
+
+DESCRIPTION
+===========
+simplRcopy copies size bytes from the memory pointed to by ptr to dst.  
+It works in conjunction with a Receive(&id, NULL, 0) call in order to
+extract message data.
+
+RETURNS
+=======
+Nothing.
+
+======================================================================
+======================================================================
+
+void simplScopy(void *dst, unsigned size)
+
+DESCRIPTION
+===========
+simplScopy copies size bytes from the memory pointed to by a sender's  
+shmem pointer to dst.
+It works in conjunction with a Send(fd, &buf, NULL, outSize, inSize)
+call in order to extract reply message data.
+
+NOTE: inSize must be set to some maximal amount or internal checking
+will reject the transaction.
+
+RETURNS
+=======
+Nothing.
+
+======================================================================
+======================================================================
+
+int simplReplySize(char *ptr)
+
+DESCRIPTION
+===========
+simplReplySize reports the maximum size of the reply message expected  
+by a sender.
+It is called between Receive() and Reply() calls.
+
+RETURNS
+=======
+Size of expected reply message. 
+
+======================================================================
+======================================================================
+
+int returnProxy(int proxyNumber)
+
+DESCRIPTION
+===========
+returnProxy returns the true value of a proxy just received by a Receive()
+call. proxyNumber is the value <= -2 returned by the instance of the Receive()
+call. The proxy number returned will be >= 1.
+
+RETURNS
+=======
+True value of proxy just received by a Receive() call. 

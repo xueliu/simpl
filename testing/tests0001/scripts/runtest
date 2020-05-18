@@ -1,0 +1,34 @@
+#!/bin/bash
+#
+#$Log: runtest,v $
+#Revision 1.1  2006/01/12 16:04:46  bobfcsoft
+#*** empty log message ***
+#
+#
+
+TEST_NO=s0001
+TEST_DESC="local SIMPL benchmark"
+
+TEST_DIR=$TEST_HOME/testing/test$TEST_NO
+OUTFILE=$TEST_DIR/results/test.out
+
+echo "Starting up test $TEST_NO" | tee $OUTFILE
+echo $TEST_DESC | tee -a $OUTFILE
+date | tee -a $OUTFILE
+
+echo "" | tee -a $OUTFILE
+echo "This may take a while to complete ... please wait" | tee -a $OUTFILE
+echo "" | tee -a $OUTFILE
+
+cd $SIMPL_HOME/benchmarks/bin
+cksum receiver | tee -a $OUTFILE
+receiver -n BOBR &
+
+sleep 2
+
+cksum sender | tee -a $OUTFILE
+#sender -n BOBS -r BOBR -t 100000 -s 1024 | tee -a $OUTFILE
+sender -n BOBS -r BOBR -t 10 -s 1024 | tee -a $OUTFILE
+
+fcslay BOBR
+echo "Test finished you can run posttest $TEST_NO for result"

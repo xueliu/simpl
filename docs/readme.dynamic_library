@@ -1,0 +1,48 @@
+/*****************************************************************************
+
+FILE:			readme.dynamic_library
+
+DATE:			09 Jan 21
+
+DESCRIPTION:	Description of how to complie SIMPL for use on a 
+				MAC OS X platform.
+
+NOTE:			tabs = 4 for this file.
+
+REVISIONS:
+$Log: readme.dynamic_library,v $
+Revision 1.2  2009/01/22 19:02:39  johnfcsoft
+clean up
+
+
+*****************************************************************************/
+
+This note contains the directions necessary for producing and using
+the dynamically linked SIMPL libraries.
+
+The following directories can produce dynamic (shared) libraries.
+	$SIMPL_HOME/simplipc/src - main SIMPL library
+	$SIMPL_HOME/fclogger/src - trace logger library
+	$SIMPL_HOME/simplUtils/src - a miscellaneous library
+
+Here are the steps to producing a dynamic library.
+
+1. Clean out the old library: 
+	make clean
+
+2. Make new dynamic library
+	make dynamic
+
+Once these dynamic libraries have been built you need to setup a path for the
+dynamic loader by editing /etc/ld.so.conf and adding the line "simple library
+path". "simple library path" may be something like /home/simpl/lib. Note that
+/home/simpl is $SIMPL_HOME in this configuration.
+
+ie. wherever the *.so library files are located after a successful make
+dynamic.
+
+You must now update the /etc/ld.so.cache file by running the ldconfig utility:
+ldconfig
+
+You should check that your libsimpl.so library has been added by running:
+ldconfig -p

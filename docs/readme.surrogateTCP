@@ -1,0 +1,209 @@
+/***********************************************************************
+
+FILE:			readme.surrogateTCP
+
+DATE:			09 Jan 22
+
+DESCRIPTION:	Description of how to use the simpl surrogate that
+				enables remote message passing based on TCP/IP.
+
+NOTE:			tabs = 4 for this file.
+
+REVISIONS:
+$Log: readme.surrogateTCP,v $
+Revision 1.4  2009/01/23 14:27:32  johnfcsoft
+updated
+
+Revision 1.3  2009/01/22 19:03:35  johnfcsoft
+clean up
+
+
+***********************************************************************/
+
+Introduction
+============
+
+In order for a sending program to pass a message to a remotely based
+receiving program some form of networking bridge is necessary. In 
+principle, this bridge could be anything. In this particular case we
+are going to discuss this bridge by way of using an existing TCP/IP
+based solution as an example.
+
+Background
+==========
+
+Take a typical sender program. This is a C program which desires to 
+send a message of some form or other to another C program which will 
+receive it, process it and then reply back accordingly. We will refer to
+these two programs as sender and receiver respectively. In order to
+accomplish this messaging the sender merely has to make a name_locate()
+call. This call is covered in the simpl-function.synopsis. As an example
+consider the following C code snippet:
+
+// sender.c - the sender program
+
+int ret;
+	.
+	.
+	.
+
+ret = name_locate("server:receiver");
+	.
+	.
+	.
+
+Let's examine the name_locate() call. The return value ret will be 0 or
+-1 indicating either success or failure.
+
+In the case of a failure, the _simpl_errno is set and the nature of the 
+error can be best understood from a call to whatsMyError(). This call is
+also described in the file simpl-function.synopsis.
+
+In the case of success, the name_locate() call has managed to cause the
+building of a software bridge from the local host to the remote host
+called server and its resident receiver program.
+
+This software bridge gives the appearance to the local sender that it
+is sending a message to a local receiver. In fact, it is. The remote 
+receiver is functionally replaced by another program which we call a 
+surrogate receiver. So the local sender sends his message to the local
+surrogate receiver. On the remote host, the program receiver thinks that
+it is receiving messages from a sender based on the same host. Again, it
+does. This is because a surrogate sender has been started up there and
+its this surrogate sender that actually sends the message to the
+receiver. 
+
+The local surrogate receiver uses TCP/IP to send messages to the
+surrogate sender on the remote host.
+
+So, the total picture looks like this:
+1. The local sender sends his message to the surrogate receiver.
+2. The surrogate receiver TCP/IP writes the message to the remote
+surrogate sender.
+3. The remote surrogate sender sends the message to the receiver.
+4. The receiver processes the message and replies back to the 
+surrogate sender.
+5. The surrogate sender then TCP/IP writes back to the local surrogate
+receiver.
+6. The surrogate receiver then replies back to the local sender.
+
+As you can see, any mechanism can be used for the actual host-host
+transmission.
+
+Alternate host-host Protocols
+==============================
+
+The purpose of the protocol router program is to direct a name_locate()
+query to the desired protocol carrier. In this case it is surrogateTcp
+and this is the default. However, it is entirely possible to use some
+other method; some sort of serial protocol say. Let's call it
+surrogateMySerial.
+
+When the surrogateMySerial program starts up, it will have to register
+with the protocol router. Then, when name_locate() calls desring the use
+of this protocol are made, the protocol router will direct the query to
+the surrogateMySerial program. In this way, the bridging software will
+be running under this protocol.
+
+In order to specify this protocol, the name_locate() call may take up
+to three parts in the string that is passed to it, viz.
+
+name_locate(protocol name:host name:receiver program name);
+
+Example: name_locate(SIMPL_SERIAL:server:receiver);
+
+The protocols are defined in ~simpl.2.0.3/include/simplProtocols.h.
+
+Usage
+=====
+
+In order to run all of this, the protocol router and surrogateTcp
+programs must be up and running. It is usually convenient to start them
+from a script at computer start up.
+
+~/simpl/bin/protocol_router &
+~/simpl/bin/surrogateTcp &
+
+Command Line Arguments
+======================
+
+protocol_router takes no arguments.
+
+surrogateTcp can take a number of arguments, they are:
+
+surrogateTcp	-a portA -b portB -i intWidth -k kaTimeout 
+				-r kaResponseTimeout -t timeAllowed 
+
+portA and portB: known ports to which various TCP sockets are attached
+for the sending and receiving of messages. They are 8001 and 8002 
+respectively.
+
+intWidth: this is the byte-width of the host box's CPU. In the case
+of a 32-bit processor we have 4 bytes. The default is 4 bytes. This
+is used when converting from binary to a char-based message structure.
+See below "Homogeneous vs. Heterogeneous Networks".
+
+kaTimeout: is the time between keep alive requests being sent. It is
+measured in seconds and if set to zero, the keep alive mechanism is
+de-activated. It is 0 seconds (de-activated) by default. 
+
+kaResponseTimeout: this is time that a keep alive message has to be
+responded to before it is considered to be a failure. It is measured in
+seconds. It is 3 seconds by default. Note that the number of keep
+alive failures before abort is currently hard coded to 3. A failure
+followed by a success resets the counter so that 3 successive failures
+are required for ther abort.
+
+timeAllowed: is the time allowed before a send or reply is considered
+to have been lost. It is 10 seconds by default. It is sometimes useful
+to disable this feature because it adds an order of magnitude in 
+temporal performance degradation to the send-receive-reply scenario.
+It can be disabled by setting it to 0. It is nonetheless a sure fire
+way to ensure that a message was indeed received by the other side.
+
+Example start up:
+
+protocol_router &
+surrogateTcp -a12000 -b12001 -k10 -t0 &
+
+In this case, the two TCP ports have been changed from the defaults,
+the keep alive mechanism will fire a keep alive every 10 seconds and
+the write/acknowledge mechanism has been disabled.
+
+***********************************************************************
+
+Homogeneous vs. Heterogeneous Networks
+======================================
+
+The surrogateTcp code can be compiled in such a way that the mechanism
+for message passing can be modified to be binary or char-based. Binary 
+is marginally faster but is not functional in heterogeneous networks 
+where different hosts store their binary data in different formats
+(big and little endian for example). If the all of the hosts are of the
+same general architecture, then either the binary or the char-based
+format will do. The default is binary-based. See the
+~/simpl.2.0.3/surrogates/tcp/src/Makefile for the definition of
+MSG_TYPE.
+
+If compiling for char-based message passing do the following:
+make clean
+make install MSG_TYPE=SUR_CHR
+
+This will ensure that all simpl remote communications will be
+char-based and hence byte-ordering independent.
+
+In the case some of the hosts are 64-bit and others are 32-bit, simply 
+recompile on each platform and in the case of the 32-bit start the
+surrogateTcp:
+
+surrogateTcp &
+
+and on the 64-bit:
+
+surrogateTcp -i8 &
+
+Be aware that if you are sending data between hosts on a heterogenoeous
+network, these messages, if binary, will also be turned around in a 
+binary sense. You will have to change the data within the binary message
+to a char-based message. The library used within SIMPL is available for
+use and the source code can be found in ~/simplUtils/src/binstr.c.

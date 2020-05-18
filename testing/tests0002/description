@@ -1,0 +1,11 @@
+-----------------------------------------------
+Test s0002: SIMPL benchmark via surrogate and loopback
+
+$Log: description,v $
+Revision 1.1  2006/01/12 15:51:17  bobfcsoft
+*** empty log message ***
+
+
+This test runs the SIMPL benchmark via the loopback with 100000
+1k message passes.
+

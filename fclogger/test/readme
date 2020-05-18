@@ -1,0 +1,41 @@
+Tester for fclogger
+
+To make the code:
+1) cd $SIMPL_HOME/fclogger/src
+	make install
+2) cd $SIMPL_HOME/fclogger/test/src
+	make install
+
+This should but 2 new exes in $SIMPL_HOME/bin
+	fclogger
+	logit
+
+To run the test:
+1) make sure the environment variable FIFO_PATH is defined
+
+	eg.  export FIFO_PATH=/root/fifo
+
+2) on one console run the fclogger task
+
+	fclogger -n <some name less than 20 chars>
+	eg.
+		fclogger -n LOGGER
+
+3) on another console run the logit task 
+
+	logit -n <my fifo name> -l <logger fifo name> -m "<test message>"
+	
+	eg.
+		logit -n bobS -l LOGGER -m "Hi there everybody"
+
+4) when the test is complete the  message should be displayed on the 
+logger console
+
+-------------------------
+FCsoftware Inc. 1998
+This code is released as open source.   We hope you find 
+it useful.  If you discover a bug or add an enhancement 
+we'd like to hear from you. 
+
+	fcsoft@netcom.ca
+-------------------------

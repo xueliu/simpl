@@ -1,0 +1,63 @@
+/*=================================================
+	tclSurrogate
+-----------------------------------------------------------------------
+    Copyright (C) 2009 FCSoftware Inc. 
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+    If you discover a bug or add an enhancement contact us on the
+    SIMPL project mailing list. 
+
+-----------------------------------------------------------------------
+=================================================*/
+/*
+ $Log: readme,v $
+ Revision 1.1  2009/01/19 20:16:02  bobfcsoft
+ relocated files
+
+ */
+
+===========================================
+
+These tools allow you to exercise the tclSurrogate.
+
+You will need 4 consoles to run this test
+
+On console 1 (logged into $SIMPL_HOME/bin) run the fclogger
+	fclogger -n LOGGER >junk
+
+On console 2 (logged into $SIMPL_HOME/bin) run the tclSurrogate
+	tclSurrogate -n BOBABC -l LOGGER
+
+On console 3 (logged into $SIMPL_HOME/bin) run the socketSender
+	socketSender -n BOBSOCK -p 8000 -l LOGGER
+	at the prompt here are some of the command implimented
+		n - nameAttach
+		l - logger locate
+		w <name> - nameLocate
+		q - quit
+	use the prompt to change the name of the child process
+	-> n BOBTCL
+
+On console 4 (logged into $SIMPL_HOME/bin) run the fifoSender
+	fifoSender -n BOBS -r BOBTCL -l LOGGER -m "hello everybody"
+
+This should result in a message traveling from fifoSender to the 
+surrogate child process called BOBTCL.   This surrogate will relay
+the message over a TCP/IP socket to socketSender who is playing the 
+role of a Tcl/Tk applet.  SocketSender is designed to reply immediately
+and that reply will reverse the path and be delivered to fifoSender.
+	
+Good luck.

@@ -1,0 +1,25 @@
+#!/bin/bash
+#
+#$Log: setup,v $
+#Revision 1.1  2006/01/12 16:04:46  bobfcsoft
+#*** empty log message ***
+#
+#
+
+TEST_NO=s0001
+TEST_DESC="local SIMPL benchmark"
+
+TEST_DIR=$TEST_HOME/testing/test$TEST_NO
+DATA_DIR=$TEST_DIR/data
+
+OUTFILE=$TEST_DIR/results/test.out
+
+echo "Starting up test #$TEST_NO" | tee $OUTFILE
+echo $TEST_DESC | tee -a $OUTFILE
+date | tee -a $OUTFILE
+
+#
+# bulk of pretest script goes here
+#
+
+echo "Test $TEST_NO setup finished"

@@ -1,0 +1,29 @@
+#!/bin/bash
+#==============================================================
+#	simplver
+#
+# Description:
+# This script displays the current SIMPL version on the system.
+#
+# NOTE:
+#
+#	FCsoftware Inc. 2002
+#   	This code is released as open source.   We hope you find 
+#	it useful.  If you discover a bug or add an enhancement 
+#	contact us on the SIMPL project mailing list. 
+#
+#==============================================================
+#
+#$Log: simplver,v $
+#Revision 1.2  2007/07/24 20:21:01  bobfcsoft
+#new contact info
+#
+#Revision 1.1.1.1  2005/03/27 11:50:35  paul_c
+#Initial import
+#
+#Revision 1.1  2002/06/12 18:11:07  root
+#Initial revision
+#
+#
+
+cat $SIMPL_HOME/version

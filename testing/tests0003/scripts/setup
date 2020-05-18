@@ -1,0 +1,25 @@
+#!/bin/bash
+#
+#$Log: setup,v $
+#Revision 1.1  2006/04/24 22:01:37  bobfcsoft
+#new test
+#
+#
+
+TEST_NO=s0003
+TEST_DESC="SIMPL benchmark via loopback with proxy"
+
+TEST_DIR=$TEST_HOME/testing/test$TEST_NO
+DATA_DIR=$TEST_DIR/data
+
+OUTFILE=$TEST_DIR/results/test.out
+
+echo "Starting up test #$TEST_NO" | tee $OUTFILE
+echo $TEST_DESC | tee -a $OUTFILE
+date | tee -a $OUTFILE
+
+#
+# bulk of pretest script goes here
+#
+
+echo "Test $TEST_NO setup finished"

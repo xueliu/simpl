@@ -1,0 +1,16 @@
+-----------------------------------------------
+Test s0003: surroProxy.tcl unit test
+
+$Log: description,v $
+Revision 1.2  2009/04/14 21:02:08  bobfcsoft
+cleanup
+
+Revision 1.1  2006/04/24 22:01:37  bobfcsoft
+new test
+
+Revision 1.1  2006/01/12 15:51:17  bobfcsoft
+*** empty log message ***
+
+
+This test runs the surroProxy.tcl unit test
+
